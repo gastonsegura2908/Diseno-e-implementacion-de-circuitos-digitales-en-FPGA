@@ -1,2 +1,9 @@
 # --- Archivos temporales de Python ---
 __pycache__/
+
+# --- Archivos temporales de LaTeX ---
+latex_file.aux
+latex_file.log
+latex_file.fls
+latex_file.synctex.gz
+latex_file.fdb_latexmk
