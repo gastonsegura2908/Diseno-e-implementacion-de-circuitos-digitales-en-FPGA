@@ -39,7 +39,7 @@ while 1 :
         
         for ptr in range(len(char_v)):
             ser.write(char_v[ptr].encode())
-            time.sleep(1)
+            #time.sleep(1)                  #descomentar esta linea si se utiliza el puerto serie con la FPGA
 
         out = ''
         while ser.inWaiting() > 0:

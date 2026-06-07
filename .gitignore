@@ -2,8 +2,8 @@
 __pycache__/
 
 # --- Archivos temporales de LaTeX ---
-latex_file.aux
-latex_file.log
-latex_file.fls
-latex_file.synctex.gz
-latex_file.fdb_latexmk
+latex/latex_file.aux
+latex/latex_file.log
+latex/latex_file.fls
+latex/latex_file.synctex.gz
+latex/latex_file.fdb_latexmk
