@@ -1,0 +1,17 @@
+\babel@toc {nil}{}\relax 
+\contentsline {section}{\numberline {1}Introducción}{2}{}%
+\contentsline {section}{\numberline {2}Marco Teórico}{2}{}%
+\contentsline {subsection}{\numberline {2.1}Filtro de Coseno Realzado (RC)}{2}{}%
+\contentsline {subsection}{\numberline {2.2}Factor de Roll-off ($\alpha $)}{2}{}%
+\contentsline {subsection}{\numberline {2.3}Filtro de Raíz de Coseno Realzado (RRC)}{2}{}%
+\contentsline {subsection}{\numberline {2.4}Parámetro span}{2}{}%
+\contentsline {subsection}{\numberline {2.5}Parámetro sps (Samples Per Symbol)}{3}{}%
+\contentsline {section}{\numberline {3}Implementación}{3}{}%
+\contentsline {subsection}{\numberline {3.1}Protocolo de comandos por puerto serie}{3}{}%
+\contentsline {subsection}{\numberline {3.2}Descripción del script principal}{3}{}%
+\contentsline {section}{\numberline {4}Experimentos y Resultados}{3}{}%
+\contentsline {subsection}{\numberline {4.1}Efecto de sps con múltiples valores de $\alpha $}{3}{}%
+\contentsline {subsection}{\numberline {4.2}Efecto de span con múltiples valores de $\alpha $}{8}{}%
+\contentsline {subsection}{\numberline {4.3}Comparación RRC vs RC con plot both}{13}{}%
+\contentsline {subsection}{\numberline {4.4}Respuesta discreta con plot discrete}{15}{}%
+\contentsline {section}{\numberline {5}Conclusiones}{16}{}%

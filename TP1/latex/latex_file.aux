@@ -1,0 +1,34 @@
+\relax 
+\providecommand\babel@aux[2]{}
+\@nameuse{bbl@beforestart}
+\babel@aux{nil}{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introducción}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Marco Teórico}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Filtro de Coseno Realzado (RC)}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Factor de Roll-off ($\alpha $)}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Filtro de Raíz de Coseno Realzado (RRC)}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Parámetro span}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Parámetro sps (Samples Per Symbol)}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Implementación}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Protocolo de comandos por puerto serie}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Descripción del script principal}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experimentos y Resultados}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Efecto de sps con múltiples valores de $\alpha $}{3}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces plot multi con sps=2, span=6, rrc=True. La baja resolución distorsiona la forma del filtro para todos los valores de $\alpha $.}}{4}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces plot multi con sps=4, span=6, rrc=True. Se comienza a distinguir la forma característica del filtro.}}{5}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces plot multi con sps=8, span=6, rrc=True. Representación típica, buen balance entre resolución y cantidad de coeficientes.}}{6}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces plot multi con sps=12, span=6, rrc=True.}}{7}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces plot multi con sps=16, span=6, rrc=True. La curva es prácticamente idéntica a sps=12, confirmando que aumentar sps más allá de 8-10 no aporta información nueva.}}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Efecto de span con múltiples valores de $\alpha $}{8}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces plot multi con span=2, sps=8, rrc=True. Truncamiento agresivo: la respuesta en frecuencia se aleja notablemente del ideal para todos los $\alpha $.}}{9}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces plot multi con span=4, sps=8, rrc=True.}}{10}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces plot multi con span=6, sps=8, rrc=True. Valor de referencia típico.}}{11}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces plot multi con span=9, sps=8, rrc=True.}}{12}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces plot multi con span=12, sps=8, rrc=True. La respuesta en frecuencia converge al comportamiento teórico del filtro RC/RRC.}}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Comparación RRC vs RC con plot both}{13}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces plot both con rrc=True ($\alpha =0.5$, span=6, sps=8). Filtro RRC: respuesta temporal sin cruces por cero en instantes de símbolo.}}{14}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces plot both con rrc=False ($\alpha =0.5$, span=6, sps=8). Filtro RC: se observan los cruces por cero en $t = \pm 1, \pm 2, \ldots  $}}{15}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Respuesta discreta con plot discrete}{15}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces plot discrete con $\alpha =0.5$, span=6, rrc=True. La comparación entre sps=4 y sps=8 muestra cómo sps controla la densidad de muestras del filtro FIR.}}{16}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusiones}{16}{}\protected@file@percent }
+\gdef \@abspage@last{16}

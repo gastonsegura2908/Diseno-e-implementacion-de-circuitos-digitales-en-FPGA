@@ -1,0 +1,303 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\geometry{margin=2.5cm}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{orange},
+    breaklines=true,
+    frame=single
+}
+
+\title{Trabajo Práctico 1 \\ Filtros y Puerto Serie}
+\author{Tu Nombre}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% -------------------------------------------------------
+\section{Introducción}
+
+Este trabajo práctico integra dos temas vistos en el curso: el diseño y análisis
+de filtros digitales en Python, y la comunicación por puerto serie. El objetivo
+es controlar los parámetros de un filtro de coseno realzado (RC) y de raíz de
+coseno realzado (RRC) mediante comandos enviados por puerto serie, y analizar
+su comportamiento a través de distintas visualizaciones.
+
+% -------------------------------------------------------
+\section{Marco Teórico}
+
+\subsection{Filtro de Coseno Realzado (RC)}
+
+El filtro de coseno realzado es ampliamente utilizado en comunicaciones digitales
+para limitar el ancho de banda de la señal transmitida minimizando la interferencia
+entre símbolos (ISI, \textit{Inter-Symbol Interference}). Su respuesta en frecuencia
+está definida por:
+
+\begin{equation}
+H(f) =
+\begin{cases}
+T, & |f| \leq \frac{1-\alpha}{2T} \\
+\frac{T}{2}\left[1 + \cos\left(\frac{\pi T}{\alpha}\left(|f| - \frac{1-\alpha}{2T}\right)\right)\right], & \frac{1-\alpha}{2T} < |f| \leq \frac{1+\alpha}{2T} \\
+0, & |f| > \frac{1+\alpha}{2T}
+\end{cases}
+\end{equation}
+
+donde $T$ es el período de símbolo y $\alpha$ es el factor de roll-off
+($0 \leq \alpha \leq 1$).
+
+\subsection{Factor de Roll-off ($\alpha$)}
+
+El factor de roll-off controla la transición entre la banda de paso y la banda
+de rechazo del filtro. Sus efectos son:
+
+\begin{itemize}
+    \item $\alpha \to 0$: el filtro se aproxima a un filtro ideal de banda estrecha.
+    La respuesta temporal presenta oscilaciones muy pronunciadas (alta sensibilidad
+    al sincronismo) pero ocupa el mínimo ancho de banda posible.
+    \item $\alpha = 1$: el filtro ocupa el doble del ancho de banda mínimo, pero
+    la respuesta temporal decae mucho más rápido, siendo más tolerante a errores
+    de sincronismo.
+\end{itemize}
+
+\subsection{Filtro de Raíz de Coseno Realzado (RRC)}
+
+El filtro RRC es la raíz cuadrada espectral del filtro RC. Se utiliza en pares:
+un filtro RRC en el transmisor y otro en el receptor. La convolución de ambos
+produce un filtro RC completo, garantizando la condición de Nyquist para ISI nula.
+A diferencia del RC, la respuesta al impulso del RRC \textbf{no} presenta cruces
+por cero en los instantes de símbolo $t = \pm nT$.
+
+\subsection{Parámetro span}
+
+El parámetro span define la duración del filtro en cantidad de símbolos. Como el
+filtro RC/RRC tiene soporte teóricamente infinito, en la práctica se trunca a
+$\text{span} \times T$ segundos. Un span corto reduce el costo computacional pero
+introduce distorsión por truncamiento, visible como ripple en la respuesta en
+frecuencia. Un span largo aproxima mejor el comportamiento ideal.
+
+\subsection{Parámetro sps (Samples Per Symbol)}
+
+El parámetro sps define cuántas muestras se toman por período de símbolo $T$.
+Determina la resolución de la representación discreta del filtro. Un valor de
+sps bajo hace visibles las muestras individuales del filtro como una secuencia
+discreta. Un valor alto produce una curva visualmente continua pero con mayor
+cantidad de coeficientes.
+
+% -------------------------------------------------------
+\section{Implementación}
+
+\subsection{Protocolo de comandos por puerto serie}
+
+Se implementó un protocolo de comandos en texto plano sobre puerto serie
+(simulado con \texttt{loop://} de pyserial). Los comandos disponibles son:
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+\textbf{Comando} & \textbf{Acción} \\
+\hline
+\texttt{set alpha <valor>} & Modifica el factor de roll-off (float) \\
+\texttt{set span <valor>}  & Modifica la duración en símbolos (int) \\
+\texttt{set sps <valor>}   & Modifica las muestras por símbolo (int) \\
+\texttt{set rrc <True|False>} & Selecciona RRC o RC \\
+\texttt{plot time}         & Respuesta al impulso (continua) \\
+\texttt{plot freq}         & Respuesta en frecuencia \\
+\texttt{plot both}         & Temporal y frecuencia en una figura \\
+\texttt{plot discrete}     & Respuesta al impulso (discreta, stems) \\
+\texttt{plot multi}        & Múltiples filtros con distintos $\alpha$ \\
+\texttt{get coef}          & Imprime los coeficientes FIR \\
+\texttt{status}            & Muestra parámetros actuales \\
+\texttt{exit}              & Cierra el puerto y termina \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Descripción del script principal}
+
+El script \texttt{tp\_main.py} instancia un objeto \texttt{RaisedCosineFilter}
+con parámetros iniciales y lo reconfigura ante cada comando \texttt{set},
+reconstruyendo el filtro con los nuevos valores. Las funciones de plot adicionales
+(\texttt{plot\_both}, \texttt{plot\_discrete}, \texttt{plot\_multi}) fueron
+implementadas fuera de la clase para no modificar \texttt{filtro.py}.
+
+% -------------------------------------------------------
+\section{Experimentos y Resultados}
+
+\subsection{Efecto de sps con múltiples valores de $\alpha$}
+
+\textbf{Motivación:} Se buscó analizar cómo la resolución de muestreo afecta
+la representación del filtro para distintos roll-offs. Se fijaron span=6 y
+rrc=True, y se varió sps $\in \{2, 4, 8, 12, 16\}$. Con sps=2 se está en el
+límite de Nyquist: apenas dos muestras por símbolo, lo que produce una
+representación muy tosca del filtro independientemente del valor de $\alpha$.
+Al aumentar sps la curva se suaviza y los lóbulos laterales del filtro se
+definen con mayor precisión. A partir de sps=8 los cambios son poco perceptibles
+visualmente, lo que sugiere que ese valor es suficiente para representar
+fielmente el filtro en este contexto.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_sps2.png}
+    \caption{plot multi con sps=2, span=6, rrc=True. La baja resolución distorsiona
+    la forma del filtro para todos los valores de $\alpha$.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_sps4.png}
+    \caption{plot multi con sps=4, span=6, rrc=True. Se comienza a distinguir
+    la forma característica del filtro.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_sps8.png}
+    \caption{plot multi con sps=8, span=6, rrc=True. Representación típica,
+    buen balance entre resolución y cantidad de coeficientes.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_sps12.png}
+    \caption{plot multi con sps=12, span=6, rrc=True.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_sps16.png}
+    \caption{plot multi con sps=16, span=6, rrc=True. La curva es prácticamente
+    idéntica a sps=12, confirmando que aumentar sps más allá de 8-10 no aporta
+    información nueva.}
+\end{figure}
+
+\subsection{Efecto de span con múltiples valores de $\alpha$}
+
+\textbf{Motivación:} Se analizó el efecto del truncamiento del filtro. Se fijaron
+sps=8 y rrc=True, y se varió span $\in \{2, 4, 6, 9, 12\}$. El filtro RC/RRC
+tiene soporte infinito en el tiempo, por lo que al truncarlo se introduce un
+error. Con span=2 el filtro es muy corto y la respuesta en frecuencia presenta
+ripple significativo, alejándose del ideal. Al aumentar el span el filtro captura
+más de la respuesta al impulso y la respuesta en frecuencia converge al
+comportamiento teórico. La comparación entre span=2 y span=12 ilustra claramente
+el compromiso entre longitud del filtro y fidelidad de la respuesta.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_span2.png}
+    \caption{plot multi con span=2, sps=8, rrc=True. Truncamiento agresivo:
+    la respuesta en frecuencia se aleja notablemente del ideal para todos los $\alpha$.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_span4.png}
+    \caption{plot multi con span=4, sps=8, rrc=True.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_span6.png}
+    \caption{plot multi con span=6, sps=8, rrc=True. Valor de referencia típico.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_span9.png}
+    \caption{plot multi con span=9, sps=8, rrc=True.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{multi_span12.png}
+    \caption{plot multi con span=12, sps=8, rrc=True. La respuesta en frecuencia
+    converge al comportamiento teórico del filtro RC/RRC.}
+\end{figure}
+
+\subsection{Comparación RRC vs RC con plot both}
+
+\textbf{Motivación:} Se comparó el filtro RRC (rrc=True) contra el RC (rrc=False)
+con los mismos parámetros ($\alpha=0.5$, span=6, sps=8). El RC presenta cruces
+por cero exactos en los instantes de símbolo $t = \pm 1, \pm 2, \ldots$, lo
+que garantiza ISI nula cuando se muestrea en el instante correcto. El RRC en
+cambio no presenta esa propiedad por sí solo: necesita ser convolucionado con
+otro RRC (en el receptor) para recuperar el RC completo. En frecuencia, ambos
+tienen el mismo soporte espectral, pero la magnitud del RRC es la raíz cuadrada
+de la del RC.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{both_rrc.png}
+    \caption{plot both con rrc=True ($\alpha=0.5$, span=6, sps=8). Filtro RRC:
+    respuesta temporal sin cruces por cero en instantes de símbolo.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{both_rc.png}
+    \caption{plot both con rrc=False ($\alpha=0.5$, span=6, sps=8). Filtro RC:
+    se observan los cruces por cero en $t = \pm 1, \pm 2, \ldots$}
+\end{figure}
+
+\subsection{Respuesta discreta con plot discrete}
+
+\textbf{Motivación:} El filtro FIR es en esencia una secuencia finita de
+coeficientes (muestras discretas). Con sps alto esta naturaleza discreta queda
+oculta porque las muestras se ven como una curva continua. Al reducir sps=4
+cada muestra es claramente visible como un valor individual, recordando que
+lo que se implementa en hardware o software es un vector de números, no una
+función continua. Se usó $\alpha=0.5$, span=6, rrc=True.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{discrete_sps4.png}
+        \caption{sps=4: cada muestra es visible individualmente}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{discrete_sps8.png}
+        \caption{sps=8: los stems quedan más juntos, la curva parece continua}
+    \end{subfigure}
+    \caption{plot discrete con $\alpha=0.5$, span=6, rrc=True. La comparación
+    entre sps=4 y sps=8 muestra cómo sps controla la densidad de muestras
+    del filtro FIR.}
+\end{figure}
+
+% -------------------------------------------------------
+\section{Conclusiones}
+
+A partir de los experimentos realizados se puede concluir que:
+
+\begin{itemize}
+    \item El factor $\alpha$ controla el compromiso entre ancho de banda ocupado
+    y sensibilidad al sincronismo. Valores bajos son más eficientes espectralmente
+    pero más exigentes en precisión de temporización.
+    \item El parámetro span determina la calidad de la aproximación al filtro ideal.
+    Un span reducido introduce ripple en frecuencia; valores a partir de 6 suelen
+    ser suficientes en la práctica.
+    \item El parámetro sps no altera la forma del filtro sino su resolución de
+    representación. A partir de sps=8 los cambios visuales son mínimos.
+    \item El filtro RRC no cumple por sí solo la condición de Nyquist; debe
+    usarse en par (transmisor y receptor) para obtener el RC completo y garantizar
+    ISI nula.
+    \item El plot discrete hace evidente que un filtro FIR es una secuencia finita
+    de coeficientes, concepto clave para su implementación en hardware o software.
+\end{itemize}
+
+\end{document}
